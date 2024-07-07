@@ -1,16 +1,15 @@
 package main
 
 import (
-	"log"
 	"sync"
 	"time"
 )
 
-// InMemCache To implement Repository Pattern For Testing purposes
+// InMemCache Interface - To implement Repository Pattern For Testing purposes
 type InMemCache interface {
 	Set(key string, value string, ttl time.Duration) bool
 	Get(key string) string
-	Delete(key string)
+	Delete(key string) bool
 	Release()
 }
 
@@ -47,7 +46,7 @@ func NewHashMap(size int) InMemCache {
 		defer func() {
 			close(hm.shutdown)
 			hm.wg.Done()
-			log.Println("Cleaning Up")
+			//log.Println("Cleaning Up")
 		}()
 
 		var i int = 0
@@ -58,7 +57,7 @@ func NewHashMap(size int) InMemCache {
 				if hm.buckets[i] != nil && hm.buckets[i].TTL != nil {
 					select {
 					case <-hm.buckets[i].TTL:
-						log.Printf("%s is Expired", hm.buckets[i].Key)
+						//log.Printf("%s is Expired", hm.buckets[i].Key)
 						hm.Delete(hm.buckets[i].Key)
 					default:
 					}
@@ -210,11 +209,11 @@ func (hm *HashMap) Get(key string) string {
 	return ""
 }
 
-func (hm *HashMap) Delete(key string) {
+func (hm *HashMap) Delete(key string) bool {
 	hm.op.Lock()
 	defer func() {
 		hm.op.Unlock()
-		log.Printf("Try to Clear key %s", key)
+		//log.Printf("Try to Clear key %s", key)
 	}()
 	// Calculate the index of the key using the hash function
 	index := hashFunction(key, hm.size)
@@ -238,12 +237,13 @@ func (hm *HashMap) Delete(key string) {
 			if hm.cnt > 0 {
 				hm.cnt--
 			}
-			return
+			return true
 		}
 		/* get next node in the linked list */
 		prev = current
 		current = current.Next
 	}
+	return false
 }
 
 func (hm *HashMap) Release() {

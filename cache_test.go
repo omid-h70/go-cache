@@ -55,9 +55,12 @@ func TestConcurrentSet(t *testing.T) {
 func TestDeleteFunc(t *testing.T) {
 	myHashMap := NewHashMap(1)
 	myHashMap.Set("key1", "val1", 0*time.Second)
-	myHashMap.Delete("key1")
+	result1 := myHashMap.Delete("key1")
+	result2 := myHashMap.Delete("key3")
 	val := myHashMap.Get("key1")
 	require.Equal(t, val, "", "Deleted Key must be gone !")
+	require.Equal(t, result1, true, "Deleting an Existing Key must be successful !")
+	require.Equal(t, result2, false, "Deleting unrelated key should fail")
 }
 
 func TestSetAndGetValue(t *testing.T) {
