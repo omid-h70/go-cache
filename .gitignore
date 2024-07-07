@@ -1,0 +1,6 @@
+coverage*
+.idea/
+vendor/
+
+tmp*
+main
